@@ -1,11 +1,11 @@
-package procesos;
-
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-
+/**
+ * Menú interactivo simplificado que lanza procesos y muestra INICIO/FIN por consola.
+ */
 public class Tarea10_Procesos {
 
     // Utility para formatear timestamps legibles
@@ -35,7 +35,7 @@ public class Tarea10_Procesos {
     }
 
     /**
-     * Lanza un proceso dado el comando (array) y muestra inicio/fin + salida.
+     * Lanza un proceso dado el comando (array) y muestra inicio/fin + salida detallada.
      *
      * @param name nombre identificador del proceso (para logs)
      * @param command array con comando y argumentos
@@ -49,7 +49,6 @@ public class Tarea10_Procesos {
         System.out.println("Comando: " + Arrays.toString(command));
 
         ProcessBuilder pb = new ProcessBuilder(command);
-        // No redirigimos a archivo, queremos capturar los streams aquí
         Process proc = pb.start();
 
         // Gobblers para salida estándar y error
@@ -59,7 +58,6 @@ public class Tarea10_Procesos {
         errGobbler.start();
 
         int exitCode = proc.waitFor(); // esperamos a que termine
-        // Asegurarnos de que los gobblers terminen de leer
         outGobbler.join();
         errGobbler.join();
 
@@ -67,6 +65,14 @@ public class Tarea10_Procesos {
         System.out.println("Código de salida: " + exitCode);
         System.out.println("===============================================");
         return exitCode;
+    }
+
+    // Wrapper que imprime INICIO simple y FIN simple alrededor de launchProcess
+    private static int runAndLog(String name, String[] cmd) throws IOException, InterruptedException {
+        System.out.println("-> Inicio proceso simple: " + name);
+        int code = launchProcess(name, cmd);
+        System.out.println("-> Fin proceso simple: " + name);
+        return code;
     }
 
     // Construye el comando ping apropiado según el sistema operativo
@@ -81,9 +87,40 @@ public class Tarea10_Procesos {
         }
     }
 
-    // Comando para obtener versión de Java (proceso corto y portable si java está instalado)
-    private static String[] buildJavaVersionCommand() {
-        return new String[] {"java", "-version"};
+    // Construye comando para abrir explorador de archivos en el directorio actual
+    private static String[] buildExplorerCommand() {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            return new String[] {"explorer.exe", "."};
+        } else if (os.contains("mac")) {
+            return new String[] {"open", "."};
+        } else {
+            return new String[] {"xdg-open", "."};
+        }
+    }
+
+    // Intentar ejecutar varios candidatos (útil para entornos Linux distintos)
+    private static int tryCandidates(String name, List<String[]> candidates) throws IOException, InterruptedException {
+        IOException lastEx = null;
+        for (String[] cmd : candidates) {
+            try {
+                return launchProcess(name, cmd);
+            } catch (IOException e) {
+                lastEx = e;
+                // probar siguiente candidato
+            }
+        }
+        // si llegamos aquí, todos fallaron
+        if (lastEx != null) throw lastEx;
+        throw new IOException("No hay candidatos para ejecutar " + name);
+    }
+
+    // Wrapper para ejecutar candidatos con mensajes INICIO/FIN simples
+    private static int runCandidatesAndLog(String name, List<String[]> candidates) throws IOException, InterruptedException {
+        System.out.println("-> Inicio proceso simple: " + name + " (probando candidatos)");
+        int code = tryCandidates(name, candidates);
+        System.out.println("-> Fin proceso simple: " + name + " (candidato exitoso)");
+        return code;
     }
 
     // Si el usuario pasa un único argumento con comillas, lo separamos en tokens simples
@@ -112,35 +149,102 @@ public class Tarea10_Procesos {
     }
 
     public static void main(String[] args) {
-        try {
-            // 1) Ejecutar ping (detecta SO)
-            String[] pingCmd = buildPingCommand();
-            launchProcess("PING_GOOGLE", pingCmd);
+        Scanner scanner = new Scanner(System.in);
+        boolean salir = false;
 
-            // 2) Ejecutar java -version
-            String[] javaVer = buildJavaVersionCommand();
-            launchProcess("JAVA_VERSION", javaVer);
+        while (!salir) {
+            System.out.println();
+            System.out.println("===== MENÚ DE PROCESOS (VERSION SIMPLIFICADA) =====");
+            System.out.println("1. Ping a google (4 paquetes)");
+            System.out.println("2. Ejecutar comando introducido ahora");
+            System.out.println("3. Abrir Explorador de archivos (directorio actual)");
+            System.out.println("4. Ejecutar comando pasado por argumentos (si se proporcionó)");
+            System.out.println("5. Salir");
+            System.out.print("Seleccione una opción (1-5): ");
 
-            // 3) (Opcional) ejecutar comando pasado por argumento
-            if (args.length > 0) {
-                // Si se pasó un único string con espacios, lo parseamos
-                String joined = String.join(" ", args);
-                String[] extra = splitCommandString(joined);
-                launchProcess("COMANDO_EXTRA", extra);
-            } else {
-                System.out.println("No se pasó comando extra por argumentos. Para probar uno:");
-                System.out.println("  java Tarea10_Procesos \"ls -la\"  (Unix)");
-                System.out.println("  java Tarea10_Procesos \"cmd /c dir\" (Windows)");
+            String line = scanner.nextLine().trim();
+            if (line.isEmpty()) {
+                System.out.println("No se introdujo opción. Intente de nuevo.");
+                continue;
             }
 
-            System.out.println("Todos los procesos solicitados han terminado.");
-        } catch (IOException e) {
-            System.err.println("Excepción de E/S al ejecutar un proceso: " + e.getMessage());
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            System.err.println("Ejecución interrumpida: " + e.getMessage());
-            e.printStackTrace();
-            Thread.currentThread().interrupt();
+            int opcion;
+            try {
+                opcion = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Opción no válida. Introduzca un número entre 1 y 5.");
+                continue;
+            }
+
+            try {
+                switch (opcion) {
+                    case 1: {
+                        String[] pingCmd = buildPingCommand();
+                        // Usamos wrapper para mostrar INICIO/FIN simples además de los logs detallados
+                        runAndLog("PING_GOOGLE", pingCmd);
+                        break;
+                    }
+
+                    case 2: {
+                        System.out.print("Introduzca el comando a ejecutar (p. ej. ls -la o \"cmd /c dir\"): ");
+                        String cmdLine = scanner.nextLine().trim();
+                        if (cmdLine.isEmpty()) {
+                            System.out.println("Comando vacío. Cancelado.");
+                        } else {
+                            String[] cmd = splitCommandString(cmdLine);
+                            runAndLog("COMANDO_USUARIO", cmd);
+                        }
+                        break;
+                    }
+
+                    case 3: {
+                        String os = System.getProperty("os.name").toLowerCase();
+                        if (os.contains("win") || os.contains("mac")) {
+                            String[] explorer = buildExplorerCommand();
+                            runAndLog("EXPLORADOR", explorer);
+                        } else {
+                            // Linux: intentar comando estándar y algunos alternativos comunes
+                            List<String[]> candidates = new ArrayList<>();
+                            candidates.add(new String[] {"xdg-open", "."});
+                            candidates.add(new String[] {"nautilus", "."});
+                            candidates.add(new String[] {"gio", "open", "."});
+                            try {
+                                runCandidatesAndLog("EXPLORADOR", candidates);
+                            } catch (IOException e) {
+                                System.err.println("No se pudo abrir el explorador de archivos. Ningún candidato disponible.");
+                            }
+                        }
+                        break;
+                    }
+
+                    case 4: {
+                        if (args.length == 0) {
+                            System.out.println("No se proporcionaron argumentos al arrancar este programa.");
+                        } else {
+                            // Unir args como un único comando y parsearlo
+                            String joined = String.join(" ", args);
+                            String[] extra = splitCommandString(joined);
+                            runAndLog("COMANDO_PASADO_ARGS", extra);
+                        }
+                        break;
+                    }
+
+                    case 5:
+                        salir = true;
+                        System.out.println("Saliendo del programa.");
+                        break;
+
+                    default:
+                        System.out.println("Opción no válida. Por favor, seleccione una opción entre 1 y 5.");
+                }
+            } catch (IOException e) {
+                System.err.println("Excepción de E/S al ejecutar el proceso: " + e.getMessage());
+            } catch (InterruptedException e) {
+                System.err.println("Ejecución interrumpida: " + e.getMessage());
+                Thread.currentThread().interrupt();
+            }
         }
+
+        scanner.close();
     }
 }
