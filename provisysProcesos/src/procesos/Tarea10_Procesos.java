@@ -40,7 +40,7 @@ public class Tarea10_Procesos {
      * @throws IOException
      * @throws InterruptedException
      */
-    // Lanza el proceso externo usando ProcessBuilder, 
+    // Lanza el proceso externo usando ProcessBuilder.
     private static int launchProcess(String name, String[] command) throws IOException, InterruptedException {
         System.out.println("===============================================");
         System.out.println("INICIO -> " + name + " | " + LocalDateTime.now().format(TF));
@@ -113,11 +113,11 @@ public class Tarea10_Procesos {
         throw new IOException("No hay candidatos para ejecutar " + name);
     }
 
-    // Wrapper para ejecutar candidatos con mensajes INICIO/FIN simples
+    // Wrapper para ejecutar candidatos con mensajes INICIO/FIN
     private static int runCandidatesAndLog(String name, List<String[]> candidates) throws IOException, InterruptedException {
-        System.out.println("-> Inicio proceso simple: " + name + " (probando candidatos)");
+        System.out.println("-> Inicio proceso: " + name + " (probando candidatos)");
         int code = tryCandidates(name, candidates);
-        System.out.println("-> Fin proceso simple: " + name + " (candidato exitoso)");
+        System.out.println("-> Fin proceso: " + name + " (candidato exitoso)");
         return code;
     }
 
