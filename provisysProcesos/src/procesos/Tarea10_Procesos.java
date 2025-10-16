@@ -3,9 +3,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/**
- * Menú interactivo simplificado que lanza procesos y muestra INICIO/FIN por consola.
- */
 public class Tarea10_Procesos {
 
     // Utility para formatear timestamps legibles
