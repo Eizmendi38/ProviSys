@@ -97,7 +97,7 @@ public class Tarea10_Procesos {
         }
     }
 
-    // Intentar ejecutar varios candidatos (útil para entornos Linux distintos)
+    // Intentar ejecutar varios exploradores (útil para entornos Linux distintos)
     private static int tryCandidates(String name, List<String[]> candidates) throws IOException, InterruptedException {
         IOException lastEx = null;
         for (String[] cmd : candidates) {
