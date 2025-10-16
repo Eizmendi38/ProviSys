@@ -155,9 +155,8 @@ public class Tarea10_Procesos {
             System.out.println("1. Ping a google (4 paquetes)");
             System.out.println("2. Ejecutar comando introducido ahora");
             System.out.println("3. Abrir Explorador de archivos (directorio actual)");
-            System.out.println("4. Ejecutar comando pasado por argumentos (si se proporcionó)");
-            System.out.println("5. Salir");
-            System.out.print("Seleccione una opción (1-5): ");
+            System.out.println("4. Salir");
+            System.out.print("Seleccione una opción (1-4): ");
 
             String line = scanner.nextLine().trim();
             if (line.isEmpty()) {
@@ -169,7 +168,7 @@ public class Tarea10_Procesos {
             try {
                 opcion = Integer.parseInt(line);
             } catch (NumberFormatException e) {
-                System.out.println("Opción no válida. Introduzca un número entre 1 y 5.");
+                System.out.println("Opción no válida. Introduzca un número entre 1 y 4.");
                 continue;
             }
 
@@ -177,7 +176,6 @@ public class Tarea10_Procesos {
                 switch (opcion) {
                     case 1: {
                         String[] pingCmd = buildPingCommand();
-                        // Usamos wrapper para mostrar INICIO/FIN simples además de los logs detallados
                         runAndLog("PING_GOOGLE", pingCmd);
                         break;
                     }
@@ -200,7 +198,6 @@ public class Tarea10_Procesos {
                             String[] explorer = buildExplorerCommand();
                             runAndLog("EXPLORADOR", explorer);
                         } else {
-                            // Linux: intentar comando estándar y algunos alternativos comunes
                             List<String[]> candidates = new ArrayList<>();
                             candidates.add(new String[] {"xdg-open", "."});
                             candidates.add(new String[] {"nautilus", "."});
@@ -214,25 +211,13 @@ public class Tarea10_Procesos {
                         break;
                     }
 
-                    case 4: {
-                        if (args.length == 0) {
-                            System.out.println("No se proporcionaron argumentos al arrancar este programa.");
-                        } else {
-                            // Unir args como un único comando y parsearlo
-                            String joined = String.join(" ", args);
-                            String[] extra = splitCommandString(joined);
-                            runAndLog("COMANDO_PASADO_ARGS", extra);
-                        }
-                        break;
-                    }
-
-                    case 5:
+                    case 4:
                         salir = true;
                         System.out.println("Saliendo del programa.");
                         break;
 
                     default:
-                        System.out.println("Opción no válida. Por favor, seleccione una opción entre 1 y 5.");
+                        System.out.println("Opción no válida. Por favor, seleccione una opción entre 1 y 4.");
                 }
             } catch (IOException e) {
                 System.err.println("Excepción de E/S al ejecutar el proceso: " + e.getMessage());
