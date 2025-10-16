@@ -8,7 +8,7 @@ public class Tarea10_Procesos {
     // Utility para formatear timestamps legibles
     private static final DateTimeFormatter TF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    // Thread que consume un InputStream y lo imprime a la consola con prefijo
+    // Thread que consume un InputStream y lo imprime a la consola con prefijo (Cuando ejecutas un proceso externo, este puede generar salida estándar y errores, Esta clase lee continuamente esos flujos y los imprime en consola, evitando bloqueos y mostrando la información en tiempo real.)
     private static class StreamGobbler extends Thread {
         private final InputStream stream;
         private final String prefix;
@@ -40,6 +40,7 @@ public class Tarea10_Procesos {
      * @throws IOException
      * @throws InterruptedException
      */
+    // Lanza el proceso externo usando ProcessBuilder, 
     private static int launchProcess(String name, String[] command) throws IOException, InterruptedException {
         System.out.println("===============================================");
         System.out.println("INICIO -> " + name + " | " + LocalDateTime.now().format(TF));
