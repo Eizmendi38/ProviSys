@@ -64,11 +64,11 @@ public class Tarea10_Procesos {
         return exitCode;
     }
 
-    // Wrapper que imprime INICIO simple y FIN simple alrededor de launchProcess
+    // Wrapper que imprime INICIO y FIN alrededor de launchProcess
     private static int runAndLog(String name, String[] cmd) throws IOException, InterruptedException {
-        System.out.println("-> Inicio proceso simple: " + name);
+        System.out.println("-> Inicio proceso: " + name);
         int code = launchProcess(name, cmd);
-        System.out.println("-> Fin proceso simple: " + name);
+        System.out.println("-> Fin proceso: " + name);
         return code;
     }
 
