@@ -151,7 +151,7 @@ public class Tarea10_Procesos {
 
         while (!salir) {
             System.out.println();
-            System.out.println("===== MENÚ DE PROCESOS (VERSION SIMPLIFICADA) =====");
+            System.out.println("===== MENÚ DE PROCESOS =====");
             System.out.println("1. Ping a google (4 paquetes)");
             System.out.println("2. Ejecutar comando introducido ahora");
             System.out.println("3. Abrir Explorador de archivos (directorio actual)");
